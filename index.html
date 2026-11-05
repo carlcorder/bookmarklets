@@ -90,6 +90,7 @@
       9px 9px 0 var(--purple), 12px 12px 0 var(--purple);
     image-rendering: pixelated;
   }
+  .h1-emoji { display: block; text-shadow: none; font-family: system-ui, sans-serif; font-size: .9em; line-height: 1.2; margin: .1em 0 .05em; }
   .how { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 40px auto 0; padding: 0; list-style: none; max-width: 820px; }
   .how li { display: flex; align-items: center; background: var(--bg-dark); border: 1px solid var(--bg-hi); border-radius: 999px; padding: 8px 18px 8px 14px; font-size: 14px; color: var(--text-dim); }
   .how li span { font-family: "Public Pixel", "Press Start 2P", monospace; font-size: 18px; line-height: 1; margin-right: 10px; }
@@ -280,7 +281,7 @@
 
 <header>
   <div class="hint-arrow">☝️</div>
-  <h1>Bookmarklet<br>Arcade</h1>
+  <h1>Bookmarklet<span class="h1-emoji" aria-hidden="true">🕹️</span>Arcade</h1>
   <ul class="how">
     <li><span>1</span><em>Show your <b>bookmarks</b> bar (<kbd id="kbd">Ctrl+Shift+B</kbd>)</em></li>
     <li><span>2</span><em>Drag a <b>cartridge</b> onto it</em></li>
