@@ -1,5 +1,7 @@
 # 🕹️ Bookmarklet Arcade
 
+**▶ Play: [carlcorder.github.io/bookmarklets](https://carlcorder.github.io/bookmarklets/)**
+
 A gallery of bookmarklets that look like game cartridges. Drag a whole cartridge to your bookmarks bar to install it.
 
 ## Publish on GitHub Pages
