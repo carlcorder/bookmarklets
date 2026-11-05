@@ -1,6 +1,6 @@
 # 🕹️ Bookmarklet Arcade
 
-A gallery of bookmarklets that look like game cartridges. Drag a cartridge's black button to your bookmarks bar to install it.
+A gallery of bookmarklets that look like game cartridges. Drag a whole cartridge to your bookmarks bar to install it.
 
 ## Publish on GitHub Pages
 
@@ -34,3 +34,4 @@ The code is fetched from the GitHub API when someone visits, so editing the gist
 - **Sites that block bookmarklets:** some sites (GitHub itself, for example) have a strict Content Security Policy that stops bookmarklets from running. This is normal.
 - **Mobile:** phones can't drag to a bookmarks bar. The ⧉ button copies the `javascript:` URL so it can be pasted into a bookmark by hand.
 - **Local preview:** just open `index.html` in a browser. It works from your disk.
+- **Title font:** the title uses [Public Pixel](https://www.fontspace.com/public-pixel-font-f72305) (CC0) if you add `fonts/PublicPixel.ttf` (or `.woff2`) to the repo. Otherwise it uses Press Start 2P from Google Fonts, which looks almost the same.
