@@ -7,8 +7,15 @@
 <meta name="description" content="Drag a cartridge to your bookmarks bar to install a bookmarklet.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
 <style>
+  /* Public Pixel (CC0, ggbot) is used if you add fonts/PublicPixel.ttf to the repo.
+     Otherwise the page falls back to Press Start 2P from Google Fonts. */
+  @font-face {
+    font-family: "Public Pixel";
+    src: url("fonts/PublicPixel.woff2") format("woff2"), url("fonts/PublicPixel.ttf") format("truetype");
+    font-display: swap;
+  }
   /* Monokai Pro palette */
   :root {
     --bg-dim:   #19181a;
@@ -72,34 +79,28 @@
   /* ---------- Header ---------- */
   header { text-align: center; padding: 56px 20px 24px; position: relative; }
   h1 {
-    font-family: "Bungee", sans-serif;
-    font-size: clamp(40px, 8vw, 88px);
-    line-height: .95; margin: 0; letter-spacing: 1px;
+    font-family: "Public Pixel", "Press Start 2P", monospace;
+    font-weight: 400;
+    font-size: clamp(26px, 5.6vw, 64px);
+    line-height: 1.25; margin: 0; letter-spacing: 2px;
     color: var(--yellow);
-    text-shadow: 4px 4px 0 var(--red), 8px 8px 0 var(--purple);
+    text-shadow:
+      3px 3px 0 var(--red), 6px 6px 0 var(--red),
+      9px 9px 0 var(--purple), 12px 12px 0 var(--purple);
+    image-rendering: pixelated;
   }
-  .tagline { color: var(--text-dim); font-size: 18px; margin: 22px auto 0; max-width: 560px; }
-  .how { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 28px auto 0; padding: 0; list-style: none; max-width: 820px; }
-  .how li { background: var(--bg-dark); border: 1px solid var(--bg-hi); border-radius: 999px; padding: 8px 16px; font-size: 14px; color: var(--text-dim); }
-  .how li span { font-family: "Bungee"; margin-right: 6px; }
+  .how { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 40px auto 0; padding: 0; list-style: none; max-width: 820px; }
+  .how li { display: flex; align-items: center; background: var(--bg-dark); border: 1px solid var(--bg-hi); border-radius: 999px; padding: 8px 18px 8px 14px; font-size: 14px; color: var(--text-dim); }
+  .how li span { font-family: "Public Pixel", "Press Start 2P", monospace; font-size: 18px; line-height: 1; margin-right: 10px; }
   .how li:nth-child(1) span { color: var(--green); }
   .how li:nth-child(2) span { color: var(--blue); }
   .how li:nth-child(3) span { color: var(--purple); }
   .how b { color: var(--text); }
+  .how em { font-style: normal; }
   kbd { font-family: "JetBrains Mono", monospace; color: var(--orange); }
   .hint-arrow { position: absolute; top: 6px; left: 50%; font-size: 26px; animation: bob 1.2s ease-in-out infinite; }
   @keyframes bob { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
 
-  /* ---------- Controls ---------- */
-  .controls { display: flex; justify-content: center; padding: 8px 20px 0; }
-  .search {
-    width: min(420px, 100%);
-    background: var(--bg-dark); color: var(--text);
-    border: 2px solid var(--bg-hi); border-radius: 12px;
-    padding: 12px 16px; font: inherit; font-size: 16px; outline: none;
-  }
-  .search::placeholder { color: var(--comment); }
-  .search:focus { border-color: var(--yellow); }
 
   /* ---------- Cartridge grid ---------- */
   main {
@@ -125,7 +126,22 @@
     animation-delay: calc(var(--i) * 70ms);
     display: flex; flex-direction: column;
   }
+  .cart { cursor: grab; }
+  .cart:active { cursor: grabbing; }
   .cart:hover { transform: rotate(0) translateY(-6px) scale(1.02); }
+  .cart.loading { cursor: progress; }
+  .cart.wiggle { animation: wiggle .4s; }
+  body.dragging .cart.is-dragging { opacity: .45; }
+  /* Invisible link covering the whole cartridge. Its text is the label,
+     which browsers use as the bookmark's name. */
+  .hit {
+    position: absolute; inset: 0; z-index: 1; border-radius: inherit;
+    color: transparent; overflow: hidden; font-size: 1px; text-decoration: none;
+    -webkit-user-drag: element;
+  }
+  .hit:focus-visible { outline: 3px solid var(--text); outline-offset: 4px; }
+  .label, .screen { pointer-events: none; }
+  .actions .btn, .expand { position: relative; z-index: 2; }
   @keyframes drop-in { from { opacity: 0; transform: translateY(-40px) rotate(-6deg); } }
   .cart::before { /* notch */
     content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
@@ -199,6 +215,7 @@
     background: none; border: 0; color: var(--muted); cursor: pointer;
     font: 11px "JetBrains Mono", monospace; padding: 0;
   }
+  .expand { pointer-events: auto; }
   .expand:hover { color: var(--text); }
 
   /* Monokai Pro syntax */
@@ -214,20 +231,16 @@
 
   /* actions */
   .actions { display: flex; gap: 8px; margin-top: 14px; align-items: stretch; }
-  .grab {
+  .handle {
     flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: var(--bg-dim); color: var(--text); text-decoration: none;
-    font-family: "Bungee", sans-serif; font-size: 13px;
+    background: var(--bg-dim); color: var(--muted);
+    font: 11px "JetBrains Mono", monospace; text-transform: uppercase; letter-spacing: .5px;
     padding: 12px 10px; border-radius: 10px;
     box-shadow: inset 0 -4px 0 #000000a0, inset 0 0 0 1px #ffffff14;
-    cursor: grab; user-select: none; white-space: nowrap;
+    white-space: nowrap;
   }
-  .grab:active { cursor: grabbing; }
-  /* grip drawn with CSS so it isn't part of the bookmark's name */
-  .grab::before { content: "⠿⠿"; color: var(--c); letter-spacing: -2px; }
-  .grab::after { content: "↑ drag"; font: 10px "JetBrains Mono", monospace; color: var(--comment); text-transform: uppercase; }
-  .grab.loading { opacity: .5; pointer-events: none; }
-  .grab.wiggle { animation: wiggle .4s; }
+  .handle::before { content: "⠿⠿"; color: var(--c); letter-spacing: -2px; font-size: 14px; }
+  .cart:hover .handle { color: var(--text); }
   @keyframes wiggle { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
   .btn {
     background: var(--bg); color: var(--text); border: 0; border-radius: 10px;
@@ -267,17 +280,12 @@
 <header>
   <div class="hint-arrow">☝️</div>
   <h1>Bookmarklet<br>Arcade</h1>
-  <p class="tagline">Small tools that run on the page you're already on. Pick a cartridge, drag it to your bookmarks bar, and click it when you need it.</p>
   <ul class="how">
-    <li><span>1</span>Show your bookmarks bar (<kbd id="kbd">Ctrl+Shift+B</kbd>)</li>
-    <li><span>2</span>Drag a cartridge's black <b>⠿ button</b> onto it</li>
-    <li><span>3</span>Click the bookmark on the right site</li>
+    <li><span>1</span><em>Show your bookmarks bar (<kbd id="kbd">Ctrl+Shift+B</kbd>)</em></li>
+    <li><span>2</span><em>Drag a <b>cartridge</b> onto it</em></li>
+    <li><span>3</span><em>Click the bookmark on the right site</em></li>
   </ul>
 </header>
-
-<div class="controls">
-  <input class="search" id="search" type="search" placeholder="Search cartridges…" aria-label="Search bookmarklets">
-</div>
 
 <main id="grid" aria-live="polite"></main>
 
@@ -402,8 +410,6 @@
   }
 
   // ---------- render ----------
-  const cards = [];
-
   items.forEach((item, i) => {
     const el = document.createElement('article');
     el.className = 'cart';
@@ -414,7 +420,9 @@
     const gistUrl = g ? `https://gist.github.com/${g.user ? g.user + '/' : ''}${g.id}` : null;
     const canTry = !item.site;
 
+    el.classList.add('loading');
     el.innerHTML = `
+      <a class="hit" draggable="true" title="Drag ${esc(item.label || '')} to your bookmarks bar">${esc(item.label || 'Bookmarklet')}</a>
       <div class="label">
         <div class="label-top">
           <div class="icon">${esc(item.icon || '⚡')}</div>
@@ -432,7 +440,7 @@
         <div class="scroll"><pre></pre></div>
       </div>
       <div class="actions">
-        <a class="grab loading" draggable="true" title="Drag me to your bookmarks bar">${esc(item.label || 'Bookmarklet')}</a>
+        <div class="handle" aria-hidden="true">drag to bookmarks bar</div>
         ${canTry ? '<button class="btn" data-act="try" title="Run it on this page">▶ Try</button>' : ''}
         <button class="btn" data-act="copy" title="Copy bookmarklet URL">⧉</button>
         ${gistUrl ? `<a class="btn" href="${esc(gistUrl)}" target="_blank" rel="noopener" title="Open the gist">{ }</a>` : ''}
@@ -443,7 +451,7 @@
     const scroll = el.querySelector('.scroll');
     const status = el.querySelector('.status');
     const fname = el.querySelector('.fname');
-    const grab = el.querySelector('.grab');
+    const grab = el.querySelector('.hit');
     let code = null;
 
     const setStatus = (txt, cls) => { status.textContent = txt; status.className = 'status ' + (cls || ''); };
@@ -458,7 +466,7 @@
       setStatus(label + ' · ' + lines + (lines === 1 ? ' line' : ' lines'), 'ok');
       // The link's text (the label) becomes the bookmark's name when dropped
       grab.href = toBookmarklet(code);
-      grab.classList.remove('loading');
+      el.classList.remove('loading');
     };
 
     if (g) {
@@ -476,15 +484,31 @@
     }
 
     el.querySelector('.expand').addEventListener('click', () => scroll.classList.toggle('open'));
+    grab.addEventListener('wheel', e => {
+      const r = scroll.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      const max = scroll.scrollHeight - scroll.clientHeight, maxX = scroll.scrollWidth - scroll.clientWidth;
+      const dy = e.shiftKey ? 0 : e.deltaY, dx = e.shiftKey ? e.deltaY : e.deltaX;
+      const canY = (dy > 0 && scroll.scrollTop < max) || (dy < 0 && scroll.scrollTop > 0);
+      const canX = (dx > 0 && scroll.scrollLeft < maxX) || (dx < 0 && scroll.scrollLeft > 0);
+      if (canY || canX) { scroll.scrollTop += dy; scroll.scrollLeft += dx; e.preventDefault(); }
+    }, { passive: false });
 
-    grab.addEventListener('dragstart', () => document.body.classList.add('dragging'));
+    grab.addEventListener('dragstart', e => {
+      if (!grab.getAttribute('href')) { e.preventDefault(); return; }
+      const r = el.getBoundingClientRect();
+      try { e.dataTransfer.setDragImage(el, e.clientX - r.left, e.clientY - r.top); } catch (_) {}
+      document.body.classList.add('dragging');
+      requestAnimationFrame(() => el.classList.add('is-dragging'));
+    });
     grab.addEventListener('dragend', () => {
       document.body.classList.remove('dragging');
+      el.classList.remove('is-dragging');
       toast(`If "${item.label}" landed in your bookmarks bar, it's installed.`);
     });
     grab.addEventListener('click', e => {
       e.preventDefault();
-      grab.classList.remove('wiggle'); void grab.offsetWidth; grab.classList.add('wiggle');
+      el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
       toast(item.site
         ? `Drag me to your bookmarks bar, then click me on ${item.site}.`
         : 'Drag me to your bookmarks bar, or click ▶ Try to test it here.');
@@ -503,18 +527,6 @@
       catch (e) { prompt('Copy this URL into a new bookmark:', grab.href); }
     });
 
-    cards.push({ el, text: [item.label, item.description, item.site, item.file].join(' ').toLowerCase() });
-  });
-
-  // ---------- search ----------
-  const empty = document.createElement('p');
-  empty.className = 'empty';
-  empty.textContent = 'No cartridges match. Try another word.';
-  document.getElementById('search').addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase();
-    let shown = 0;
-    cards.forEach(c => { const hit = !q || c.text.includes(q); c.el.hidden = !hit; shown += hit; });
-    if (!shown) grid.appendChild(empty); else empty.remove();
   });
 
   if (!items.length) grid.innerHTML = '<p class="empty">No bookmarklets yet. Add some to bookmarklets.js.</p>';
